@@ -1,0 +1,441 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enna | Premium Swimwear</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@200;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        obsidian: '#1a1a1a',
+                        sand: '#e8e4db',
+                        terracotta: '#d97c60',
+                        chalk: '#faf9f7',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom CSS for Animations & Premium Feel */
+        html { scroll-behavior: smooth; }
+        body { background-color: theme('colors.chalk'); color: theme('colors.obsidian'); }
+        
+        /* Sticky Navigation Transitions */
+        #navbar { transition: background-color 0.4s ease, border-bottom 0.4s ease, padding 0.4s ease; }
+        .nav-scrolled { background-color: rgba(250, 249, 247, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.05); padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .nav-scrolled .nav-text { color: theme('colors.obsidian') !important; }
+        .nav-scrolled svg { stroke: theme('colors.obsidian') !important; }
+
+        /* Product Card Hover Effects */
+        .img-wrapper { position: relative; overflow: hidden; aspect-ratio: 3/4; }
+        .img-primary { transition: opacity 0.5s ease, transform 1.5s ease; width: 100%; height: 100%; object-fit: cover; }
+        .img-secondary { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease, transform 1.5s ease; transform: scale(1.05); }
+        
+        .product-card:hover .img-primary { opacity: 0; transform: scale(1.05); }
+        .product-card:hover .img-secondary { opacity: 1; transform: scale(1); }
+        
+        .quick-add-btn { position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 85%; }
+        .product-card:hover .quick-add-btn { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Cart Drawer & Overlay */
+        #cart-drawer { transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .drawer-open { transform: translateX(0) !important; }
+        #overlay { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; backdrop-filter: blur(4px); }
+        .overlay-open { opacity: 1 !important; pointer-events: auto !important; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+    </style>
+</head>
+<body class="antialiased font-sans flex flex-col min-h-screen">
+
+    <div id="overlay" class="fixed inset-0 bg-black/40 z-40" onclick="toggleCart()"></div>
+
+    <nav id="navbar" class="fixed w-full z-30 top-0 pt-6 pb-6 px-6 lg:px-12 flex justify-between items-center text-white transition-all duration-300">
+        <a href="#" class="nav-text font-display font-bold text-2xl tracking-widest uppercase z-50">Enna</a>
+        
+        <div class="hidden lg:flex space-x-8 nav-text text-sm tracking-wide font-medium">
+            <a href="#shop" class="hover:text-terracotta transition-colors">Shop All</a>
+            <a href="#shop" class="hover:text-terracotta transition-colors">Bikinis</a>
+            <a href="#shop" class="hover:text-terracotta transition-colors">One-Pieces</a>
+            <a href="#story" class="hover:text-terracotta transition-colors">Our Story</a>
+        </div>
+        
+        <div class="flex space-x-6 items-center">
+            <button class="hover:opacity-70 transition-opacity">
+                <svg class="w-5 h-5 stroke-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            </button>
+            <button class="hidden md:block hover:opacity-70 transition-opacity">
+                <svg class="w-5 h-5 stroke-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+            </button>
+            <button class="relative hover:opacity-70 transition-opacity" onclick="toggleCart()">
+                <svg class="w-5 h-5 stroke-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                <span id="cart-badge" class="absolute -top-2 -right-2 bg-terracotta text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center opacity-0 transition-opacity">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <header class="relative h-screen w-full flex items-center justify-center text-center">
+        <div class="absolute inset-0 w-full h-full bg-black/20 z-10"></div>
+        <img src="https://images.unsplash.com/photo-1562183241-b937e95585b6?q=80&w=2000&auto=format&fit=crop" alt="Enna Hero Swimwear" class="absolute inset-0 w-full h-full object-cover">
+        
+        <div class="relative z-20 flex flex-col items-center px-4 mt-20">
+            <h1 class="font-display text-5xl md:text-7xl lg:text-8xl text-white font-bold tracking-tight mb-6 drop-shadow-lg">Summer, Defined.</h1>
+            <p class="text-white text-lg md:text-xl font-light mb-10 max-w-lg drop-shadow-md">The 2026 Collection. Sustainable luxury designed for the modern muse.</p>
+            <a href="#shop" class="bg-white text-obsidian px-10 py-4 font-semibold text-sm tracking-widest uppercase hover:bg-obsidian hover:text-white transition-all duration-300 transform hover:scale-105">Shop the Collection</a>
+        </div>
+    </header>
+
+    <main id="shop" class="flex-grow w-full max-w-[1440px] mx-auto px-6 lg:px-12 py-24 flex flex-col lg:flex-row gap-12">
+        
+        <aside class="w-full lg:w-64 flex-shrink-0">
+            <div class="sticky top-32">
+                <h2 class="font-display font-semibold text-xl mb-6">Filter & Sort</h2>
+                
+                <div class="mb-8 border-b border-gray-200 pb-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">Category</h3>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li><label class="flex items-center gap-2 cursor-pointer hover:text-obsidian"><input type="radio" name="cat" value="All" checked onchange="filterProducts()" class="accent-obsidian"> All</label></li>
+                        <li><label class="flex items-center gap-2 cursor-pointer hover:text-obsidian"><input type="radio" name="cat" value="Bikini" onchange="filterProducts()" class="accent-obsidian"> Bikinis</label></li>
+                        <li><label class="flex items-center gap-2 cursor-pointer hover:text-obsidian"><input type="radio" name="cat" value="One-Piece" onchange="filterProducts()" class="accent-obsidian"> One-Pieces</label></li>
+                    </ul>
+                </div>
+
+                <div class="mb-8 border-b border-gray-200 pb-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">Size</h3>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="filter-size w-10 h-10 border border-gray-300 text-xs hover:border-obsidian hover:bg-obsidian hover:text-white transition-colors rounded-sm" onclick="toggleSize(this, 'XS')">XS</button>
+                        <button class="filter-size w-10 h-10 border border-gray-300 text-xs hover:border-obsidian hover:bg-obsidian hover:text-white transition-colors rounded-sm" onclick="toggleSize(this, 'S')">S</button>
+                        <button class="filter-size w-10 h-10 border border-gray-300 text-xs hover:border-obsidian hover:bg-obsidian hover:text-white transition-colors rounded-sm" onclick="toggleSize(this, 'M')">M</button>
+                        <button class="filter-size w-10 h-10 border border-gray-300 text-xs hover:border-obsidian hover:bg-obsidian hover:text-white transition-colors rounded-sm" onclick="toggleSize(this, 'L')">L</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">Sort By</h3>
+                    <select id="sortSelect" onchange="filterProducts()" class="w-full border border-gray-300 bg-transparent p-3 text-sm focus:outline-none focus:border-obsidian">
+                        <option value="featured">Featured</option>
+                        <option value="lowToHigh">Price: Low to High</option>
+                        <option value="highToLow">Price: High to Low</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <div class="flex-1">
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+                </div>
+            
+            <div id="no-results" class="hidden text-center py-20 text-gray-500">
+                <p>No products match your current filters.</p>
+                <button onclick="resetFilters()" class="mt-4 underline hover:text-obsidian">Clear Filters</button>
+            </div>
+        </div>
+    </main>
+
+    <section id="story" class="w-full bg-sand py-24 px-6 relative overflow-hidden">
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <h2 class="font-display text-3xl md:text-5xl font-semibold mb-6">Consciously Crafted.</h2>
+            <p class="text-lg text-gray-700 leading-relaxed mb-10">We believe that luxury shouldn't come at the expense of our oceans. Every Enna piece is ethically engineered in-house using regenerated nylon derived from rescued fishing nets and ocean plastic. Perfect fit. Zero compromise.</p>
+            <a href="#" class="inline-flex items-center border-b border-obsidian pb-1 font-semibold hover:text-terracotta hover:border-terracotta transition-colors">Read Our Sustainability Report <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></a>
+        </div>
+    </section>
+
+    <aside id="cart-drawer" class="fixed right-0 top-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+            <h2 class="font-display font-semibold text-xl">Your Cart (<span id="cart-count-header">0</span>)</h2>
+            <button onclick="toggleCart()" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <svg class="w-6 h-6 stroke-obsidian" fill="none" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div class="h-full flex flex-col items-center justify-center text-gray-400 space-y-4 empty-cart-msg">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <p>Your cart is empty.</p>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-100 p-6 bg-gray-50">
+            <div class="flex justify-between items-center mb-6 text-lg font-semibold font-display">
+                <span>Subtotal</span>
+                <span id="cart-subtotal">$0.00</span>
+            </div>
+            <p class="text-xs text-gray-500 mb-6 text-center">Shipping & taxes calculated at checkout.</p>
+            <button class="w-full bg-obsidian text-white py-4 font-semibold text-sm tracking-widest uppercase hover:bg-terracotta transition-colors flex justify-center items-center gap-2">
+                Proceed to Checkout
+            </button>
+        </div>
+    </aside>
+
+    <footer class="bg-obsidian text-white pt-20 pb-10 px-6 lg:px-12 border-t border-gray-800">
+        <div class="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div>
+                <h3 class="font-display font-bold text-2xl tracking-widest uppercase mb-6">Enna</h3>
+                <p class="text-gray-400 text-sm leading-relaxed mb-6">Redefining swimwear with minimalist design and sustainable practices. Designed in Los Angeles.</p>
+            </div>
+
+            <div>
+                <h4 class="font-semibold uppercase tracking-wider text-xs mb-6 text-gray-300">Customer Care</h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Shipping & Returns</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Size Guide</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">FAQ</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-semibold uppercase tracking-wider text-xs mb-6 text-gray-300">Company</h4>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Our Story</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Sustainability</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-semibold uppercase tracking-wider text-xs mb-6 text-gray-300">The Enna Club</h4>
+                <p class="text-sm text-gray-400 mb-4">Subscribe for early access to new collections and exclusive events.</p>
+                <form class="flex flex-col space-y-3" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                    <input type="email" placeholder="Email Address" required class="bg-transparent border border-gray-700 p-3 text-sm text-white focus:outline-none focus:border-white transition-colors">
+                    <button type="submit" class="bg-white text-obsidian py-3 text-sm font-semibold uppercase tracking-wider hover:bg-terracotta hover:text-white transition-colors">Subscribe</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800 text-xs text-gray-500">
+            <p>&copy; 2026 Enna Swimwear. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition-colors">Instagram</a>
+                <a href="#" class="hover:text-white transition-colors">TikTok</a>
+                <a href="#" class="hover:text-white transition-colors">Pinterest</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA: Dummy Products ---
+        const productsData = [
+            { id: 1, name: "The Classic Onyx Bikini", category: "Bikini", price: 120.00, color: "Black", colorCode: "#1a1a1a", sizes: ["XS", "S", "M"], img1: "https://images.unsplash.com/photo-1582639590011-f5a8416d1101?q=80&w=600&auto=format&fit=crop", img2: "https://images.unsplash.com/photo-1582639590011-f5a8416d1101?q=80&w=600&auto=format&fit=crop&crop=bottom" },
+            { id: 2, name: "Riviera Asymmetric One-Piece", category: "One-Piece", price: 165.00, color: "White", colorCode: "#ffffff", sizes: ["S", "M", "L"], img1: "https://images.unsplash.com/photo-1605335191285-703ea320dcfb?q=80&w=600&auto=format&fit=crop", img2: "https://images.unsplash.com/photo-1605335191285-703ea320dcfb?q=80&w=600&auto=format&fit=crop&crop=top" },
+            { id: 3, name: "Soleil Ribbed Set", category: "Bikini", price: 135.00, color: "Terracotta", colorCode: "#d97c60", sizes: ["XS", "S", "M", "L"], img1: "https://images.unsplash.com/photo-1520113412543-1e67e3a35dfc?q=80&w=600&auto=format&fit=crop", img2: "https://images.unsplash.com/photo-1520113412543-1e67e3a35dfc?q=80&w=600&auto=format&fit=crop&crop=bottom" },
+            { id: 4, name: "The Dune Sculpt Suit", category: "One-Piece", price: 175.00, color: "Sand", colorCode: "#e8e4db", sizes: ["M", "L"], img1: "https://images.unsplash.com/photo-1574621008639-652a6d713c77?q=80&w=600&auto=format&fit=crop", img2: "https://images.unsplash.com/photo-1574621008639-652a6d713c77?q=80&w=600&auto=format&fit=crop&crop=top" },
+            { id: 5, name: "Isla Triangle Top & Bottom", category: "Bikini", price: 110.00, color: "Olive", colorCode: "#556b2f", sizes: ["XS", "S"], img1: "https://images.unsplash.com/photo-1622262446487-17eb48aebcf3?q=80&w=600&auto=format&fit=crop", img2: "https://images.unsplash.com/photo-1622262446487-17eb48aebcf3?q=80&w=600&auto=format&fit=crop&crop=bottom" },
+            { id: 6, name: "Monaco Halter One-Piece", category: "One-Piece", price: 190.00, color: "Black", colorCode: "#1a1a1a", sizes: ["S", "M", "L"], img1: "https://images.unsplash.com/photo-1512844478170-13788e0b2307?q=80&w=600&auto=format&fit=crop", img2: "https://images.unsplash.com/photo-1512844478170-13788e0b2307?q=80&w=600&auto=format&fit=crop&crop=top" }
+        ];
+
+        // --- STATE ---
+        let cart = [];
+        let selectedSizeFilter = null;
+
+        // --- DOM ELEMENTS ---
+        const navbar = document.getElementById('navbar');
+        const gridContainer = document.getElementById('product-grid');
+        const noResults = document.getElementById('no-results');
+        const cartDrawer = document.getElementById('cart-drawer');
+        const overlay = document.getElementById('overlay');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartBadge = document.getElementById('cart-badge');
+        const cartCountHeader = document.getElementById('cart-count-header');
+        const cartSubtotal = document.getElementById('cart-subtotal');
+
+        // --- NAVBAR SCROLL LOGIC ---
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('nav-scrolled');
+            } else {
+                navbar.classList.remove('nav-scrolled');
+            }
+        });
+
+        // --- RENDER PRODUCTS ---
+        function renderProducts(products) {
+            gridContainer.innerHTML = '';
+            
+            if (products.length === 0) {
+                gridContainer.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            gridContainer.classList.remove('hidden');
+            noResults.classList.add('hidden');
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card group cursor-pointer';
+                card.innerHTML = `
+                    <div class="img-wrapper bg-gray-100 mb-4">
+                        <img src="${product.img1}" alt="${product.name}" class="img-primary">
+                        <img src="${product.img2}" alt="${product.name} alt angle" class="img-secondary">
+                        <button onclick="addToCart(${product.id}, event)" class="quick-add-btn bg-white/95 text-obsidian py-3 px-4 font-semibold text-xs tracking-wider uppercase shadow-lg hover:bg-obsidian hover:text-white">
+                            Quick Add - $${product.price}
+                        </button>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-display font-semibold text-base mb-1 group-hover:text-terracotta transition-colors">${product.name}</h3>
+                            <p class="text-sm text-gray-500">$${product.price.toFixed(2)}</p>
+                        </div>
+                        <div class="w-4 h-4 rounded-full border border-gray-200" style="background-color: ${product.colorCode};" title="${product.color}"></div>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            });
+        }
+
+        // --- FILTER & SORT LOGIC ---
+        function toggleSize(btn, size) {
+            document.querySelectorAll('.filter-size').forEach(b => {
+                b.classList.remove('bg-obsidian', 'text-white');
+            });
+            
+            if (selectedSizeFilter === size) {
+                selectedSizeFilter = null; // Toggle off
+            } else {
+                selectedSizeFilter = size;
+                btn.classList.add('bg-obsidian', 'text-white');
+            }
+            filterProducts();
+        }
+
+        function filterProducts() {
+            const catFilter = document.querySelector('input[name="cat"]:checked').value;
+            const sortVal = document.getElementById('sortSelect').value;
+
+            let filtered = productsData.filter(p => {
+                const matchCat = catFilter === "All" || p.category === catFilter;
+                const matchSize = !selectedSizeFilter || p.sizes.includes(selectedSizeFilter);
+                return matchCat && matchSize;
+            });
+
+            if (sortVal === 'lowToHigh') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortVal === 'highToLow') {
+                filtered.sort((a, b) => b.price - a.price);
+            }
+
+            renderProducts(filtered);
+        }
+
+        function resetFilters() {
+            document.querySelector('input[value="All"]').checked = true;
+            document.getElementById('sortSelect').value = "featured";
+            if(selectedSizeFilter) toggleSize(document.querySelector('.filter-size.bg-obsidian'), selectedSizeFilter);
+            filterProducts();
+        }
+
+        // --- CART LOGIC ---
+        function toggleCart() {
+            cartDrawer.classList.toggle('drawer-open');
+            overlay.classList.toggle('overlay-open');
+            document.body.style.overflow = cartDrawer.classList.contains('drawer-open') ? 'hidden' : '';
+        }
+
+        function addToCart(productId, event) {
+            event.stopPropagation(); // Prevent product card click (if any routing existed)
+            const product = productsData.find(p => p.id === productId);
+            
+            // Check if already in cart
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1, selectedSize: product.sizes[0] }); // Default to first size
+            }
+            
+            updateCartUI();
+            toggleCart(); // Open drawer to confirm addition
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            // Update counts
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCountHeader.textContent = totalItems;
+            
+            if (totalItems > 0) {
+                cartBadge.textContent = totalItems;
+                cartBadge.classList.remove('opacity-0');
+            } else {
+                cartBadge.classList.add('opacity-0');
+            }
+
+            // Update Items List
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-gray-400 space-y-4 empty-cart-msg">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <p>Your cart is empty.</p>
+                    </div>
+                `;
+                cartSubtotal.textContent = "$0.00";
+                return;
+            }
+
+            cartItemsContainer.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                subtotal += item.price * item.quantity;
+                const div = document.createElement('div');
+                div.className = 'flex gap-4 border-b border-gray-100 pb-4';
+                div.innerHTML = `
+                    <img src="${item.img1}" alt="${item.name}" class="w-20 h-28 object-cover bg-gray-100">
+                    <div class="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-display font-semibold text-sm pr-4">${item.name}</h4>
+                                <button onclick="removeFromCart(${item.id})" class="text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-1">Color: ${item.color} | Size: ${item.selectedSize}</p>
+                            <p class="text-sm font-medium">$${item.price.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-gray-500 mr-2 text-xs">Qty:</span>
+                            <span class="font-medium">${item.quantity}</span>
+                        </div>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(div);
+            });
+
+            cartSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+        }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts(productsData);
+        });
+
+    </script>
+</body>
+</html>
+
